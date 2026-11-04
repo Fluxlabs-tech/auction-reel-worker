@@ -1,0 +1,25 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: auction-reels-discovery-cron
+  namespace: zoop-platform
+spec:
+  schedule: "*/2 * * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 5
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: discovery-cron
+              image: gcr.io/zoop-prod-env/auction-reel-server:latest
+              command: ["npm", "run", "cron:discovery"]
+              envFrom:
+                - configMapRef:
+                    name: auction-reels-config
+                - secretRef:
+                    name: auction-reels-secrets

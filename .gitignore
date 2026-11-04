@@ -1,0 +1,21 @@
+node_modules/
+dist/
+coverage/
+scratch/
+.env
+.DS_Store
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.idea/
+.vscode/
+tmp/
+*.mp4
+*.jpg
+*.ts.tmp
+
+
+# Local offline pipeline mirror (npm run local:fetch / local:run)
+local-data/
+scripts/

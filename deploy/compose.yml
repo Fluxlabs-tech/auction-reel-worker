@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  auction-reel-server:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    container_name: auction-reel-server
+    restart: always
+    ports:
+      - "8080:8080"
+    environment:
+      - NODE_ENV=production
+      - PORT=8080
+      - STREAM_CONCURRENCY=1
+      - LOT_CONCURRENCY=2
+      - RENDER_THREADS=4
+    env_file:
+      - ../.env
+    volumes:
+      - /mnt/disks/scratch:/tmp/auction-reels-scratch
+      - /mnt/disks/themes:/tmp/reel-themes

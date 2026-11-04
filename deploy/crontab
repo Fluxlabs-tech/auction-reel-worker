@@ -1,0 +1,2 @@
+# Run auction reel discovery every 2 minutes
+*/2 * * * * cd /app && /usr/local/bin/npm run cron:discovery >> /var/log/discovery-cron.log 2>&1
