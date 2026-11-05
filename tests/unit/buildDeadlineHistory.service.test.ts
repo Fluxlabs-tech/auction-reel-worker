@@ -1,5 +1,5 @@
 import { buildDeadlineHistoryService } from '../../src/services/timeline/buildDeadlineHistory.service';
-import { StreamAuctionItem } from '../../src/services/external/getStreamAuctionTimeline.service';
+import { StreamAuctionItem } from '../../src/services/external';
 
 describe('buildDeadlineHistoryService', () => {
   it('should replay deadline extensions and validate matches', () => {

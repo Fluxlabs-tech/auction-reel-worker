@@ -1,5 +1,5 @@
 import { ReelTimeline, TimelineResult, TimelineCue } from '../../interfaces/timeline.interface';
-import { StreamAuctionItem } from '../external/getStreamAuctionTimeline.service';
+import { StreamAuctionItem } from '../external';
 import { StreamClock } from '../media/buildStreamClock.service';
 import { LotWindow } from '../../interfaces/lot.interface';
 import { LatencyState } from '../../interfaces/job.interface';

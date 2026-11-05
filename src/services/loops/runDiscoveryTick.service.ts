@@ -1,8 +1,10 @@
 import { ReelServerStateModel } from '../../models/reelServerState.model';
 import { AuctionReelJobModel } from '../../models/auctionReelJob.model';
-import { getStreamsWithClosedAuctionsService } from '../external/getStreamsWithClosedAuctions.service';
-import { getStreamSummaryService } from '../external/getStreamSummary.service';
-import { publishAuctionReelEventService } from '../external/pubsub/publishAuctionReelEvent.service';
+import {
+  getStreamsWithClosedAuctionsService,
+  getStreamSummaryService,
+  publishAuctionReelEventService,
+} from '../external';
 import { GIVE_UP_AFTER_MS } from '../../config/defaults';
 
 export const isStreamSkippable = (summary: any): { skippable: boolean; reason?: string } => {

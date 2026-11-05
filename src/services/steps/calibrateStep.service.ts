@@ -2,7 +2,7 @@ import { AuctionReelJob, JobStep } from '../../interfaces/job.interface';
 import { AuctionReelLot } from '../../interfaces/lot.interface';
 import { AuctionReelLotModel } from '../../models/auctionReelLot.model';
 import { ReelConfigModel } from '../../models/reelConfig.model';
-import { downloadGcsObjectService } from '../external/downloadGcsObject.service';
+import { downloadGcsObjectService } from '../external';
 import { calibrateLatencyService, LotCalibrationInput } from '../timeline/calibrateLatency.service';
 import { getStreamGcsPrefix, getLotGcsPrefix } from './helpers';
 

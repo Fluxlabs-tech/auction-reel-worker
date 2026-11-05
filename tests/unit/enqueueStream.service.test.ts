@@ -1,6 +1,6 @@
 import { enqueueStreamService } from '../../src/services/loops/enqueueStream.service';
 import { AuctionReelJobModel } from '../../src/models/auctionReelJob.model';
-import * as summaryService from '../../src/services/external/getStreamSummary.service';
+import * as summaryService from '../../src/services/external/livestream/getStreamSummary.service';
 
 describe('enqueueStreamService', () => {
   afterEach(() => {

@@ -2,7 +2,7 @@ import { StreamClock } from '../media/buildStreamClock.service';
 import { ReelConfig } from '../../interfaces/theme.interface';
 import { LotWindow } from '../../interfaces/lot.interface';
 import { TranscriptWord } from '../../interfaces/transcript.interface';
-import { StreamAuctionItem } from '../external/getStreamAuctionTimeline.service';
+import { StreamAuctionItem } from '../external';
 import { parseAmountsService } from './parseAmounts.service';
 
 export interface LotCalibrationInput {

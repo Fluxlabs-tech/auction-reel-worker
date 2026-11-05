@@ -1,5 +1,5 @@
 import axios, { AxiosResponse } from 'axios';
-import { env } from '../../config/env';
+import { env } from '../../../config/env';
 
 export interface StreamsWithClosedAuctionsResponse {
   streams: Array<{

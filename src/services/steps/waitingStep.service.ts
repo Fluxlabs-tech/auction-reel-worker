@@ -1,6 +1,5 @@
 import { AuctionReelJob, JobStep } from '../../interfaces/job.interface';
-import { getStreamAuctionTimelineService } from '../external/getStreamAuctionTimeline.service';
-import { getS3ObjectService } from '../external/getS3Object.service';
+import { getStreamAuctionTimelineService, getS3ObjectService } from '../external';
 import { NotReadyError, FatalError } from '../../errors';
 import { WAITING_NOT_READY_BACKOFF_MS, GIVE_UP_AFTER_MS } from '../../config/defaults';
 

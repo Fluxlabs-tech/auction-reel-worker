@@ -1,6 +1,6 @@
 import { calibrateLatencyService } from '../../src/services/timeline/calibrateLatency.service';
 import { StreamClock } from '../../src/services/media/buildStreamClock.service';
-import { StreamAuctionItem } from '../../src/services/external/getStreamAuctionTimeline.service';
+import { StreamAuctionItem } from '../../src/services/external';
 import { DEFAULT_REEL_CONFIG } from '../../src/config/defaults';
 
 describe('calibrateLatencyService', () => {

@@ -1,6 +1,6 @@
 import { validateTimelineService } from '../../src/services/timeline/validateTimeline.service';
 import { ReelTimeline } from '../../src/interfaces/timeline.interface';
-import { StreamAuctionItem } from '../../src/services/external/getStreamAuctionTimeline.service';
+import { StreamAuctionItem } from '../../src/services/external';
 
 describe('validateTimelineService', () => {
   it('should detect DEADLINE_MISMATCH, LOW_SYNC, and WINNER_MISMATCH flags', () => {

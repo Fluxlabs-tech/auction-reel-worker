@@ -1,5 +1,5 @@
 import { ReelTimeline } from '../../interfaces/timeline.interface';
-import { StreamAuctionItem } from '../external/getStreamAuctionTimeline.service';
+import { StreamAuctionItem } from '../external';
 import { LatencyState } from '../../interfaces/job.interface';
 
 export const validateTimelineService = (

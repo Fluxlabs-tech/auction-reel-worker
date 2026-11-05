@@ -1,8 +1,7 @@
 import { AuctionReelJob, JobStep } from '../../interfaces/job.interface';
-import { getS3ObjectService } from '../external/getS3Object.service';
+import { getS3ObjectService, uploadGcsObjectService } from '../external';
 import { parsePlaylistService } from '../media/parsePlaylist.service';
 import { buildStreamClockService } from '../media/buildStreamClock.service';
-import { uploadGcsObjectService } from '../external/uploadGcsObject.service';
 import { getStreamGcsPrefix } from './helpers';
 
 export const buildClockStepService = async (

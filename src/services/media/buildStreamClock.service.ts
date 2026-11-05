@@ -1,6 +1,6 @@
 import pLimit from 'p-limit';
 import { HlsSegment } from './parsePlaylist.service';
-import { headS3ObjectService } from '../external/headS3Object.service';
+import { headS3ObjectService } from '../external';
 
 export interface ClockGroupAnchor {
   group: number;

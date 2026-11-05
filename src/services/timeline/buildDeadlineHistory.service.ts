@@ -1,4 +1,4 @@
-import { StreamAuctionItem } from '../external/getStreamAuctionTimeline.service';
+import { StreamAuctionItem } from '../external';
 
 export interface DeadlineHistorySegment {
   at: string; // ISO string when segment started

@@ -5,11 +5,13 @@ import { AuctionReelJob, JobStep } from '../../interfaces/job.interface';
 import { AuctionReelLot } from '../../interfaces/lot.interface';
 import { AuctionReelLotModel } from '../../models/auctionReelLot.model';
 import { ReelConfigModel } from '../../models/reelConfig.model';
-import { downloadGcsObjectService } from '../external/downloadGcsObject.service';
-import { uploadGcsObjectService } from '../external/uploadGcsObject.service';
+import {
+  downloadGcsObjectService,
+  uploadGcsObjectService,
+  fetchTranscriptWordsService,
+} from '../external';
 import { clipWindowService } from '../media/clipWindow.service';
 import { cutClipService } from '../media/cutClip.service';
-import { fetchTranscriptWordsService } from '../external/fetchTranscriptWords.service';
 import { cleanWordsService } from '../timeline/cleanWords.service';
 import { NotReadyError } from '../../errors';
 import { LOT_RETRY_BACKOFF_MS, MAX_LOT_ATTEMPTS } from '../../config/defaults';

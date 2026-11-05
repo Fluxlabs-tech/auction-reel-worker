@@ -1,5 +1,5 @@
 import { AuctionReelJobModel } from '../../models/auctionReelJob.model';
-import { getStreamSummaryService } from '../external/getStreamSummary.service';
+import { getStreamSummaryService } from '../external';
 import { GIVE_UP_AFTER_MS } from '../../config/defaults';
 
 export interface EnqueueStreamResult {

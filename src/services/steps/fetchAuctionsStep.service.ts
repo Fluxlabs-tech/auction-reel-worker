@@ -1,10 +1,12 @@
 import { AuctionReelJob, JobStep } from '../../interfaces/job.interface';
-import { getStreamAuctionTimelineService } from '../external/getStreamAuctionTimeline.service';
-import { getStreamSummaryService } from '../external/getStreamSummary.service';
-import { uploadGcsObjectService } from '../external/uploadGcsObject.service';
+import {
+  getStreamAuctionTimelineService,
+  getStreamSummaryService,
+  uploadGcsObjectService,
+  publishAuctionReelEventService,
+} from '../external';
 import { selectThemeService } from '../render/selectTheme.service';
 import { AuctionReelLotModel } from '../../models/auctionReelLot.model';
-import { publishAuctionReelEventService } from '../external/pubsub/publishAuctionReelEvent.service';
 import { getStreamGcsPrefix, getLotGcsPrefix } from './helpers';
 
 export const fetchAuctionsStepService = async (
