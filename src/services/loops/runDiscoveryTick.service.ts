@@ -2,6 +2,7 @@ import { ReelServerStateModel } from '../../models/reelServerState.model';
 import { AuctionReelJobModel } from '../../models/auctionReelJob.model';
 import { getStreamsWithClosedAuctionsService } from '../external/getStreamsWithClosedAuctions.service';
 import { getStreamSummaryService } from '../external/getStreamSummary.service';
+import { publishAuctionReelEventService } from '../external/pubsub/publishAuctionReelEvent.service';
 import { GIVE_UP_AFTER_MS } from '../../config/defaults';
 
 export const isStreamSkippable = (summary: any): { skippable: boolean; reason?: string } => {
@@ -19,6 +20,10 @@ export const runDiscoveryTickService = async (): Promise<number> => {
   let page: any;
   let processedCount: number = 0;
   let nowMs: number;
+  let streamId: number;
+  let alreadyExists: boolean;
+  let summary: any;
+  let skipCheck: { skippable: boolean; reason?: string };
 
   try {
     nowMs = Date.now();
@@ -30,22 +35,27 @@ export const runDiscoveryTickService = async (): Promise<number> => {
     page = await getStreamsWithClosedAuctionsService(cursor, 200);
 
     for (const s of page.streams || []) {
-      const streamId = s.stream_id;
-      const alreadyExists = await AuctionReelJobModel.exists(streamId);
+      streamId = s.stream_id;
+      alreadyExists = await AuctionReelJobModel.exists(streamId);
       if (alreadyExists) {
         continue;
       }
 
-      let summary: any = {};
+      summary = {};
       try {
         summary = await getStreamSummaryService(streamId);
       } catch (_sumErr) {
         summary = {};
       }
 
-      const skipCheck = isStreamSkippable(summary);
+      skipCheck = isStreamSkippable(summary);
       if (skipCheck.skippable) {
         await AuctionReelJobModel.createSkipped(streamId, skipCheck.reason || 'skipped');
+        await publishAuctionReelEventService({
+          status: 'SKIPPED',
+          stream_id: streamId,
+          reason: skipCheck.reason || 'skipped',
+        });
         processedCount++;
         continue;
       }

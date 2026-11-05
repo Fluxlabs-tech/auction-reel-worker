@@ -33,6 +33,7 @@ export interface EnvironmentConfig {
   GCP_PROJECT_ID?: string;
   GCP_SERVICE_ACCOUNT_JSON?: string;
   GCP_SERVICE_ACCOUNT_KEY_PATH?: string;
+  AUCTION_REEL_PUBSUB_TOPIC: string;
   REELS_BUCKET: string;
   THEMES_BUCKET: string;
 
@@ -85,6 +86,7 @@ export const env: EnvironmentConfig = {
   GCP_SERVICE_ACCOUNT_JSON: process.env.GCP_SERVICE_ACCOUNT_JSON,
   GCP_SERVICE_ACCOUNT_KEY_PATH:
     process.env.GCP_SERVICE_ACCOUNT_KEY_PATH || process.env.GOOGLE_APPLICATION_CREDENTIALS,
+  AUCTION_REEL_PUBSUB_TOPIC: process.env.AUCTION_REEL_PUBSUB_TOPIC || 'auction-reel-events',
   REELS_BUCKET: process.env.REELS_BUCKET || 'zoop-auction-reels-prod',
   THEMES_BUCKET: process.env.THEMES_BUCKET || 'zoop-reel-themes-prod',
 

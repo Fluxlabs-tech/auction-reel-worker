@@ -78,6 +78,8 @@ export const cutClipService = async (
       ssOffset.toFixed(3),
       '-t',
       duration.toFixed(3),
+      '-r',
+      '30',
       '-c:v',
       'libx264',
       '-preset',

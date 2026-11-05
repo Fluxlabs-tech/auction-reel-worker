@@ -172,6 +172,7 @@ export const renderLotsStepService = async (
               lot.id,
               renderErr?.message,
             );
+
             await AuctionReelLotModel.recordFailure(
               job.stream_id,
               lot.id,

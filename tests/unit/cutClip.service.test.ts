@@ -72,10 +72,12 @@ describe('cutClipService', () => {
     expect(concatContent).toContain(`file '${fakeSeg1}'`);
     expect(concatContent).toContain(`file '${fakeSeg2}'`);
 
-    // Verify ffmpeg was spawned with concat list
+    // Verify ffmpeg was spawned with concat list and 30fps rate
     expect(mockSpawn).toHaveBeenCalled();
     const spawnArgs = mockSpawn.mock.calls[0][1];
     expect(spawnArgs).toContain(concatListPath);
+    expect(spawnArgs).toContain('-r');
+    expect(spawnArgs).toContain('30');
   });
 
   it('should throw error when no segments overlap the window', async () => {

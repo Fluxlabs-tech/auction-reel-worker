@@ -532,7 +532,7 @@ export class AuctionReelJobModel {
 
       try {
         snapshot = await collectionRef
-          .where('status', 'not-in', ['COMPLETED', 'FAILED'])
+          .where('status', 'not-in', ['COMPLETED', 'FAILED', 'SKIPPED'])
           .limit(limit * 3)
           .get();
       } catch (_idxErr) {
@@ -543,7 +543,7 @@ export class AuctionReelJobModel {
       for (const doc of snapshot.docs) {
         const data = doc.data() as AuctionReelJob;
         // Filter out terminal states
-        if (data.status === 'COMPLETED' || data.status === 'FAILED') {
+        if (data.status === 'COMPLETED' || data.status === 'FAILED' || data.status === 'SKIPPED') {
           continue;
         }
         // Skip if currently actively leased by another worker and lease has not expired
@@ -592,7 +592,11 @@ export class AuctionReelJobModel {
         }
 
         currentData = snap.data() as AuctionReelJob;
-        if (currentData.status === 'COMPLETED' || currentData.status === 'FAILED') {
+        if (
+          currentData.status === 'COMPLETED' ||
+          currentData.status === 'FAILED' ||
+          currentData.status === 'SKIPPED'
+        ) {
           return null;
         }
         if (currentData.lease_until && currentData.lease_until > nowMs) {
@@ -741,6 +745,37 @@ export class AuctionReelJobModel {
       console.error('[AuctionReelJobModel.markFailed] Error marking job failed:', {
         error: err?.message || err,
         streamId,
+      });
+      throw err;
+    }
+  }
+
+  public static async markSkipped(streamId: number, reason: string): Promise<void> {
+    let db: FirebaseFirestore.Firestore;
+    let docRef: FirebaseFirestore.DocumentReference;
+    let nowStr: string;
+    let updatePayload: Record<string, any>;
+
+    try {
+      db = getFirestoreDb();
+      docRef = db.collection(this.collectionName).doc(String(streamId));
+      nowStr = new Date().toISOString();
+
+      updatePayload = {
+        status: 'SKIPPED',
+        step: 'DONE',
+        skip_reason: reason,
+        lease_until: null,
+        worker_id: null,
+        updated_at: nowStr,
+      };
+
+      await docRef.set(updatePayload, { merge: true });
+    } catch (err: any) {
+      console.error('[AuctionReelJobModel.markSkipped] Error marking job skipped:', {
+        error: err?.message || err,
+        streamId,
+        reason,
       });
       throw err;
     }

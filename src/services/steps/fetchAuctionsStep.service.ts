@@ -4,6 +4,7 @@ import { getStreamSummaryService } from '../external/getStreamSummary.service';
 import { uploadGcsObjectService } from '../external/uploadGcsObject.service';
 import { selectThemeService } from '../render/selectTheme.service';
 import { AuctionReelLotModel } from '../../models/auctionReelLot.model';
+import { publishAuctionReelEventService } from '../external/pubsub/publishAuctionReelEvent.service';
 import { getStreamGcsPrefix, getLotGcsPrefix } from './helpers';
 
 export const fetchAuctionsStepService = async (
@@ -31,6 +32,11 @@ export const fetchAuctionsStepService = async (
       );
 
     if (lots.length === 0) {
+      await publishAuctionReelEventService({
+        status: 'SKIPPED',
+        stream_id: job.stream_id,
+        reason: 'no_auctions',
+      });
       return {
         next: 'DONE',
         patch: {

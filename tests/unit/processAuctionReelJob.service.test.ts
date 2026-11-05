@@ -103,4 +103,28 @@ describe('processAuctionReelJobService', () => {
     expect(auctionDataModule.ingestStreamAuctionDataService).not.toHaveBeenCalled();
     expect(lotReelsModule.processStreamLotsService).toHaveBeenCalledWith(job);
   });
+
+  it('should skip execution if job is already in a terminal state (SKIPPED/COMPLETED/FAILED)', async () => {
+    const job: AuctionReelJob = {
+      stream_id: 12345,
+      schema_version: 1,
+      step: 'DONE',
+      status: 'SKIPPED',
+      next_run_at: Date.now(),
+      lease_until: null,
+      worker_id: null,
+      attempts: {},
+      last_error: null,
+      readiness: { auctions_closed: true, playlist_final: true, checked_at: '' },
+      counts: { total: 0, prepared: 0, done: 0, needs_review: 0, failed: 0 },
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+
+    await processAuctionReelJobService(job);
+
+    expect(transcribeModule.transcribeStreamAudioService).not.toHaveBeenCalled();
+    expect(auctionDataModule.ingestStreamAuctionDataService).not.toHaveBeenCalled();
+    expect(lotReelsModule.processStreamLotsService).not.toHaveBeenCalled();
+  });
 });

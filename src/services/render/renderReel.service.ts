@@ -70,7 +70,7 @@ export const renderReelService = async (
       '-c:v',
       'libx264',
       '-preset',
-      'medium',
+      'fast',
       '-crf',
       '18',
       '-threads',

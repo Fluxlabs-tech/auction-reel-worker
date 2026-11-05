@@ -6,6 +6,7 @@ export const WORKER_TICK_INTERVAL_MS = 5 * 1000; // 5 seconds
 export const DEFAULT_CRON_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
 export const DEFAULT_MAX_JOB_LIMIT = 2;
 export const DEFAULT_LOT_MAX_RETRIES = 3;
+export const DEFAULT_AUCTION_REEL_PUBSUB_TOPIC = 'auction-reel-events';
 
 export const DEFAULT_LEASE_MS = 15 * 60 * 1000; // 15 minutes
 export const LEASE_RENEW_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes

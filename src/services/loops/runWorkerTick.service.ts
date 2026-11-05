@@ -1,5 +1,6 @@
 import { AuctionReelJobModel } from '../../models/auctionReelJob.model';
 import { STEP_HANDLERS } from '../steps';
+import { publishAuctionReelEventService } from '../external/pubsub/publishAuctionReelEvent.service';
 import { NotReadyError, FatalError } from '../../errors';
 import {
   DEFAULT_LEASE_MS,
@@ -17,6 +18,10 @@ export const runWorkerTickService = async (
   let nowMs: number;
   let stepFn: any;
   let stepResult: any;
+  let currentAttempts: number;
+  let maxAttempts: number;
+  let errorMessage: string;
+  let backoffMs: number;
 
   try {
     nowMs = Date.now();
@@ -70,10 +75,15 @@ export const runWorkerTickService = async (
         error.message,
       );
       await AuctionReelJobModel.fail(job.stream_id, workerId, error.message);
+      await publishAuctionReelEventService({
+        status: 'FAILED',
+        stream_id: job.stream_id,
+        error: error.message,
+      });
     } else {
-      const currentAttempts = (job.attempts?.[job.step] ?? 0) + 1;
-      const maxAttempts = MAX_STEP_ATTEMPTS[job.step] ?? 3;
-      const errorMessage = error?.message || 'Step execution error';
+      currentAttempts = (job.attempts?.[job.step] ?? 0) + 1;
+      maxAttempts = MAX_STEP_ATTEMPTS[job.step] ?? 3;
+      errorMessage = error?.message || 'Step execution error';
 
       console.error(
         `[runWorkerTickService] Error on stream ${job.stream_id} (${job.step}), attempt ${currentAttempts}/${maxAttempts}:`,
@@ -82,9 +92,15 @@ export const runWorkerTickService = async (
 
       if (currentAttempts >= maxAttempts) {
         await AuctionReelJobModel.fail(job.stream_id, workerId, errorMessage);
+        await publishAuctionReelEventService({
+          status: 'FAILED',
+          stream_id: job.stream_id,
+          error: errorMessage,
+          retry_count: currentAttempts,
+        });
       } else {
         // Exponential backoff: 2^n minutes
-        const backoffMs = Math.pow(2, currentAttempts) * 60 * 1000;
+        backoffMs = Math.pow(2, currentAttempts) * 60 * 1000;
         await AuctionReelJobModel.backoff(
           job.stream_id,
           workerId,

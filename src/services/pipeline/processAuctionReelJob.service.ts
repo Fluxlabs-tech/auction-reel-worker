@@ -13,6 +13,13 @@ export const processAuctionReelJobService = async (job: AuctionReelJob): Promise
       `[processAuctionReelJobService] Evaluating pipeline for stream ${job.stream_id} (status: ${job.status})...`,
     );
 
+    if (['COMPLETED', 'FAILED', 'SKIPPED', 'DONE'].includes(job.status)) {
+      console.log(
+        `[processAuctionReelJobService] Stream ${job.stream_id} is already in terminal state (${job.status}). Skipping.`,
+      );
+      return;
+    }
+
     // 1. Stage 1: Check if transcript is available
     isTranscriptAvailable = Boolean(
       job.transcript &&

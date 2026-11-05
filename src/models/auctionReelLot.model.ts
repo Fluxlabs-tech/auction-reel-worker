@@ -459,4 +459,35 @@ export class AuctionReelLotModel {
       throw error;
     }
   }
+
+  public static async markSkipped(
+    streamId: number,
+    auctionId: string,
+    reason: string,
+  ): Promise<void> {
+    let collection: FirebaseFirestore.CollectionReference;
+    let docRef: FirebaseFirestore.DocumentReference;
+    let nowStr: string;
+
+    try {
+      collection = this.getCollection(streamId);
+      docRef = collection.doc(auctionId);
+      nowStr = new Date().toISOString();
+
+      await docRef.set(
+        {
+          status: 'SKIPPED',
+          last_error: reason,
+          updated_at: nowStr,
+        },
+        { merge: true },
+      );
+    } catch (error: any) {
+      console.error('[AuctionReelLotModel.markSkipped] Error:', error?.message || error, {
+        streamId,
+        auctionId,
+      });
+      throw error;
+    }
+  }
 }

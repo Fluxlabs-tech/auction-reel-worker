@@ -9,6 +9,7 @@ import { parsePlaylistService, HlsSegment } from '../media/parsePlaylist.service
 import { buildStreamClockService, StreamClock } from '../media/buildStreamClock.service';
 import { cleanupStreamScratchService } from '../media/cleanupStreamScratch.service';
 import { renderSingleLotReelService } from './renderSingleLotReel.service';
+import { publishAuctionReelEventService } from '../external/pubsub/publishAuctionReelEvent.service';
 import { env } from '../../config/env';
 
 export const processStreamLotsService = async (job: AuctionReelJob): Promise<void> => {
@@ -21,6 +22,13 @@ export const processStreamLotsService = async (job: AuctionReelJob): Promise<voi
   let transcriptBuffer: Buffer;
   let allWords: TranscriptWord[] = [];
   let allLots: AuctionReelLot[] = [];
+  let currentRetries: number;
+  let newRetryCount: number;
+  let artifacts: any;
+  let errMsg: string;
+  let terminalLots: AuctionReelLot[];
+  let failedCount: number;
+  let completedCount: number;
 
   try {
     console.log(`[processStreamLotsService] Scanning lots for stream ${job.stream_id}...`);
@@ -33,6 +41,16 @@ export const processStreamLotsService = async (job: AuctionReelJob): Promise<voi
           `[processStreamLotsService] All ${allLots.length} lots already processed for stream ${job.stream_id}. Completing job.`,
         );
         await AuctionReelJobModel.markCompleted(job.stream_id);
+      } else {
+        console.log(
+          `[processStreamLotsService] No lots exist for stream ${job.stream_id}. Marking SKIPPED.`,
+        );
+        await AuctionReelJobModel.markSkipped(job.stream_id, 'no_auctions');
+        await publishAuctionReelEventService({
+          status: 'SKIPPED',
+          stream_id: job.stream_id,
+          reason: 'no_auctions',
+        });
       }
       await cleanupStreamScratchService(job.stream_id);
       return;
@@ -62,17 +80,19 @@ export const processStreamLotsService = async (job: AuctionReelJob): Promise<voi
 
     // 3. Process each unprocessed lot with 3-retry threshold
     for (const lot of unprocessedLots) {
-      const currentRetries = lot.retry_count || 0;
+      if (lot.status === 'SKIPPED') {
+        console.log(`[processStreamLotsService] Lot ${lot.id} is already marked SKIPPED.`);
+        continue;
+      }
+
+      currentRetries = lot.retry_count || 0;
 
       if (currentRetries >= env.LOT_MAX_RETRIES) {
         console.warn(
           `[processStreamLotsService] Lot ${lot.id} exceeded max retries (${currentRetries}/${env.LOT_MAX_RETRIES}). Marking FAILED.`,
         );
-        await AuctionReelLotModel.markFailed(
-          job.stream_id,
-          lot.id,
-          `Exceeded maximum retries (${env.LOT_MAX_RETRIES})`,
-        );
+        errMsg = `Exceeded maximum retries (${env.LOT_MAX_RETRIES})`;
+        await AuctionReelLotModel.markFailed(job.stream_id, lot.id, errMsg);
         continue;
       }
 
@@ -80,16 +100,16 @@ export const processStreamLotsService = async (job: AuctionReelJob): Promise<voi
         `[processStreamLotsService] Rendering lot ${lot.lot_number} (${lot.id}), attempt ${currentRetries + 1}/${env.LOT_MAX_RETRIES}...`,
       );
 
-      const newRetryCount = await AuctionReelLotModel.incrementRetry(job.stream_id, lot.id);
+      newRetryCount = await AuctionReelLotModel.incrementRetry(job.stream_id, lot.id);
 
       try {
-        const artifacts = await renderSingleLotReelService(job, lot, allWords, clock, segs);
+        artifacts = await renderSingleLotReelService(job, lot, allWords, clock, segs);
         await AuctionReelLotModel.markCompleted(job.stream_id, lot.id, artifacts);
         console.log(
           `[processStreamLotsService] Successfully completed reel for lot ${lot.id}: reel=${artifacts.reelUri}, raw=${artifacts.rawReelUri}`,
         );
       } catch (renderError: any) {
-        const errMsg = renderError?.message || 'Reel render failure';
+        errMsg = renderError?.message || 'Reel render failure';
         console.error(
           `[processStreamLotsService] Error rendering lot ${lot.id} on attempt ${newRetryCount}:`,
           errMsg,
@@ -109,11 +129,13 @@ export const processStreamLotsService = async (job: AuctionReelJob): Promise<voi
 
     // 4. Check if all lots for this stream are terminal
     allLots = await AuctionReelLotModel.listAll(job.stream_id);
-    const terminalLots = allLots.filter((l) => l.status === 'COMPLETED' || l.status === 'FAILED');
+    terminalLots = allLots.filter(
+      (l) => l.status === 'COMPLETED' || l.status === 'FAILED' || l.status === 'SKIPPED',
+    );
 
     if (terminalLots.length === allLots.length && allLots.length > 0) {
-      const failedCount = allLots.filter((l) => l.status === 'FAILED').length;
-      const completedCount = allLots.filter((l) => l.status === 'COMPLETED').length;
+      failedCount = allLots.filter((l) => l.status === 'FAILED').length;
+      completedCount = allLots.filter((l) => l.status === 'COMPLETED').length;
 
       console.log(
         `[processStreamLotsService] All lots terminal for stream ${job.stream_id} (${completedCount} completed, ${failedCount} failed). Finalizing job.`,
@@ -127,6 +149,17 @@ export const processStreamLotsService = async (job: AuctionReelJob): Promise<voi
 
       // Cleanup local scratch dir for this stream
       await cleanupStreamScratchService(job.stream_id);
+
+      // Trigger stream-level Pub/Sub event when all lots of a stream are done processing
+      await publishAuctionReelEventService({
+        status: completedCount === 0 && failedCount > 0 ? 'FAILED' : 'DONE',
+        stream_id: job.stream_id,
+        counts: {
+          total: allLots.length,
+          completed: completedCount,
+          failed: failedCount,
+        },
+      });
     }
   } catch (error: any) {
     console.error(

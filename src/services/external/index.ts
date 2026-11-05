@@ -5,4 +5,5 @@ export * from './groq';
 export * from './zoopStt';
 export * from './shareLeaderboard';
 export * from './livestream';
+export * from './pubsub';
 export * from './fetchTranscriptWords.service';
