@@ -45,7 +45,7 @@ export const uploadGcsObjectService = async (
       resumable: false,
     });
 
-    return `gs://${bucketName}/${filePath}`;
+    return filePath;
   } catch (error: any) {
     console.error('[uploadGcsObjectService] Error uploading to GCS:', error?.message || error, {
       targetPathOrUri,

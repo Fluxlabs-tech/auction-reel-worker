@@ -105,18 +105,18 @@ describe('Lot 3-Retry Policy', () => {
     (AuctionReelLotModel.getUnprocessedLots as jest.Mock).mockResolvedValue([retryableLot]);
     (AuctionReelLotModel.incrementRetry as jest.Mock).mockResolvedValue(2);
     (renderModule.renderSingleLotReelService as jest.Mock).mockResolvedValue({
-      reelUri: 'gs://bucket/reels/reel.mp4',
-      rawReelUri: 'gs://bucket/reels/raw_reel.mp4',
-      thumbUri: 'gs://bucket/reels/thumb.jpg',
+      reelUri: 'auction-reels/reels/reel.mp4',
+      rawReelUri: 'auction-reels/reels/raw_reel.mp4',
+      thumbUri: 'auction-reels/reels/thumb.jpg',
     });
     (AuctionReelLotModel.listAll as jest.Mock).mockResolvedValue([
       {
         ...retryableLot,
         status: 'COMPLETED',
         artifacts: {
-          reelUri: 'gs://bucket/reels/reel.mp4',
-          rawReelUri: 'gs://bucket/reels/raw_reel.mp4',
-          thumbUri: 'gs://bucket/reels/thumb.jpg',
+          reelUri: 'auction-reels/reels/reel.mp4',
+          rawReelUri: 'auction-reels/reels/raw_reel.mp4',
+          thumbUri: 'auction-reels/reels/thumb.jpg',
         },
       },
     ]);
@@ -128,7 +128,7 @@ describe('Lot 3-Retry Policy', () => {
     expect(AuctionReelLotModel.markCompleted).toHaveBeenCalledWith(
       99999,
       'auction-retryable',
-      expect.objectContaining({ reelUri: 'gs://bucket/reels/reel.mp4' }),
+      expect.objectContaining({ reelUri: 'auction-reels/reels/reel.mp4' }),
     );
     expect(pubsubModule.publishAuctionReelEventService).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -170,7 +170,7 @@ describe('Lot 3-Retry Policy', () => {
     (AuctionReelLotModel.getUnprocessedLots as jest.Mock).mockResolvedValue([lot1]);
     (AuctionReelLotModel.incrementRetry as jest.Mock).mockResolvedValue(1);
     (renderModule.renderSingleLotReelService as jest.Mock).mockResolvedValue({
-      reelUri: 'gs://bucket/reels/reel1.mp4',
+      reelUri: 'auction-reels/reels/reel1.mp4',
     });
     (AuctionReelLotModel.listAll as jest.Mock).mockResolvedValue([
       { ...lot1, status: 'COMPLETED' },

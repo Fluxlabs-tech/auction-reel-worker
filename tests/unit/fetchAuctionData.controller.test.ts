@@ -52,7 +52,7 @@ describe('fetchAuctionDataController', () => {
       total_lots: 41,
       bids_count: 120,
       auctions_count: 41,
-      storage_uri: 'auctions/70316/auctions.json',
+      storage_uri: 'auction-reels/auctions/70316/auctions.json',
       updated_at: '2026-11-03T16:00:00.000Z',
       auctions: {},
     };
@@ -76,7 +76,7 @@ describe('fetchAuctionDataController', () => {
       total_lots: 10,
       bids_count: 50,
       auctions_count: 10,
-      storage_uri: 'auctions/70316/auctions.json',
+      storage_uri: 'auction-reels/auctions/70316/auctions.json',
       updated_at: '2026-11-03T16:00:00.000Z',
       auctions: {},
     };
@@ -99,7 +99,7 @@ describe('fetchAuctionDataController', () => {
       total_lots: 1,
       bids_count: 0,
       auctions_count: 1,
-      storage_uri: 'auctions/70316/auctions.json',
+      storage_uri: 'auction-reels/auctions/70316/auctions.json',
       updated_at: '2026-11-03T16:00:00.000Z',
       auctions: {},
     };

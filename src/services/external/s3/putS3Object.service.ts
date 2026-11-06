@@ -24,7 +24,7 @@ export const putS3ObjectService = async (
     });
 
     await s3.send(command);
-    return `s3://${bucket}/${key}`;
+    return key.replace(/^\/+/, '');
   } catch (error: any) {
     console.error('[putS3ObjectService] Error uploading to S3:', error?.message || error, {
       bucket,

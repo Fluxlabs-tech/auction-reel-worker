@@ -58,7 +58,7 @@ describe('processAuctionReelJobService', () => {
       updated_at: new Date().toISOString(),
       transcript: {
         status: 'COMPLETED',
-        storage_uri: 'gs://reels/transcripts/12345/transcript.json',
+        storage_uri: 'auction-reels/transcripts/12345/transcript.json',
       },
       auction_data_present: false, // Auction data not yet present
     };
@@ -90,7 +90,7 @@ describe('processAuctionReelJobService', () => {
       updated_at: new Date().toISOString(),
       transcript: {
         status: 'COMPLETED',
-        storage_uri: 'gs://reels/transcripts/12345/transcript.json',
+        storage_uri: 'auction-reels/transcripts/12345/transcript.json',
       },
       auction_data_present: true, // Both present
     };

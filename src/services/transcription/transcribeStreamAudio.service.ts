@@ -147,7 +147,7 @@ export const transcribeStreamAudioService = async (job: AuctionReelJob): Promise
     }
 
     // 2. Upload audio to configured bucket (GCP or AWS)
-    audioKey = `audio/${job.stream_id}/audio.mp3`;
+    audioKey = `auction-reels/audio/${job.stream_id}/audio.mp3`;
     audioUri = await uploadToStorageService(audioKey, audioPath, {
       contentType: 'audio/mpeg',
     });
@@ -159,7 +159,7 @@ export const transcribeStreamAudioService = async (job: AuctionReelJob): Promise
     words = await dispatchTranscriptionService(audioPath);
 
     // 4. Save transcript artifact to configured bucket (GCP or AWS)
-    transcriptKey = `transcripts/${job.stream_id}/transcript.json`;
+    transcriptKey = `auction-reels/transcripts/${job.stream_id}/transcript.json`;
     transcriptUri = await uploadToStorageService(transcriptKey, JSON.stringify(words, null, 2), {
       contentType: 'application/json',
     });

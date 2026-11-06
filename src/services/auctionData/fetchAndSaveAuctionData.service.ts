@@ -134,7 +134,7 @@ export const fetchAndSaveAuctionDataService = async (
     }
 
     // Backup raw timeline JSON to configured storage bucket (GCP/AWS)
-    auctionsKey = `auctions/${streamId}/auctions.json`;
+    auctionsKey = `auction-reels/auctions/${streamId}/auctions.json`;
     try {
       await uploadToStorageService(auctionsKey, JSON.stringify(timeline, null, 2), {
         contentType: 'application/json',

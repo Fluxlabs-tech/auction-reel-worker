@@ -20,6 +20,7 @@
     "seed:70299": "ts-node scripts/seed_stream_70299.ts",
     "seed:70277": "ts-node scripts/seed_stream_70277.ts",
     "cron:discovery": "ts-node scripts/discovery_cron.ts",
+    "setup:subscription": "ts-node scripts/create_auction_reel_subscription.ts",
     "docker:build": "docker compose build",
     "docker:up": "docker compose up -d",
     "docker:down": "docker compose down",
