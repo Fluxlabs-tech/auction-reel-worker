@@ -7,6 +7,10 @@ import { buildHudAssService } from './buildHudAss.service';
 import { buildCaptionsAssService } from './buildCaptionsAss.service';
 import { buildFilterGraphService } from './buildFilterGraph.service';
 import { assertNonEmptyOutputService } from '../media/assertNonEmptyOutput.service';
+import {
+  calculateBitrateBudgetService,
+  BitrateBudget,
+} from '../media/calculateBitrateBudget.service';
 import { env } from '../../config/env';
 
 export interface RenderReelResult {
@@ -29,9 +33,18 @@ export const renderReelService = async (
   let hudAssText: string;
   let captionsAssText: string;
   let filterGraphRes: ReturnType<typeof buildFilterGraphService>;
+  let budget: BitrateBudget;
   let ffmpegArgs: string[];
   let ffmpegProcess: any;
   let stderrData: string = '';
+  let reelStats: fs.Stats;
+  let maxBytesLimit: number;
+  let recodePath: string;
+  let recodeStderr: string = '';
+  let safeVideoKbps: number;
+  let recodeArgs: string[];
+  let recodeProcess: any;
+  let thumbTime: number;
   let thumbArgs: string[];
   let thumbProcess: any;
   let thumbStderr: string = '';
@@ -55,7 +68,10 @@ export const renderReelService = async (
     // 2. Build filter complex graph
     filterGraphRes = buildFilterGraphService(tl, theme, hudAssPath, captionsAssPath);
 
-    // 3. Assemble ffmpeg arguments
+    // 3. Compute duration-based VBV bitrate budget (target 15MB for WhatsApp 16MB limit)
+    budget = calculateBitrateBudgetService(tl.end, env.MAX_REEL_BYTES);
+
+    // 4. Assemble ffmpeg arguments with dynamic rate limits
     ffmpegArgs = [
       '-y',
       '-i',
@@ -72,13 +88,17 @@ export const renderReelService = async (
       '-preset',
       'fast',
       '-crf',
-      '18',
+      String(budget.crf),
+      '-maxrate',
+      `${budget.videoMaxrateKbps}k`,
+      '-bufsize',
+      `${budget.bufsizeKbps}k`,
       '-threads',
       String(env.RENDER_THREADS || 4),
       '-c:a',
       'aac',
       '-b:a',
-      '160k',
+      `${budget.audioBitrateKbps}k`,
       '-t',
       tl.end.toFixed(3),
       '-movflags',
@@ -86,7 +106,7 @@ export const renderReelService = async (
       reelPath,
     ];
 
-    // 4. Execute ffmpeg with timeout guard
+    // 5. Execute ffmpeg with timeout guard
     await new Promise<void>((resolve, reject) => {
       const timeoutTimer = setTimeout(() => {
         try {
@@ -126,8 +146,64 @@ export const renderReelService = async (
 
     await assertNonEmptyOutputService(reelPath);
 
-    // 5. Generate thumbnail at result reveal (result.t + 0.6s)
-    const thumbTime = Math.min(tl.end - 0.2, (tl.result?.t || 10) + 0.6);
+    // 6. Failsafe check: verify output file size does not exceed 16MB limit
+    maxBytesLimit = 16 * 1024 * 1024;
+    reelStats = fs.statSync(reelPath);
+    if (reelStats.size > maxBytesLimit) {
+      console.warn(
+        `[renderReelService] Reel ${reelPath} exceeded 16MB limit (${reelStats.size} bytes). Executing safety recode pass...`,
+      );
+      recodePath = path.join(outDir, 'reel_recode.mp4');
+      recodeStderr = '';
+      safeVideoKbps = Math.floor(budget.videoMaxrateKbps * 0.9);
+      recodeArgs = [
+        '-y',
+        '-i',
+        reelPath,
+        '-c:v',
+        'libx264',
+        '-preset',
+        'veryfast',
+        '-b:v',
+        `${safeVideoKbps}k`,
+        '-maxrate',
+        `${safeVideoKbps}k`,
+        '-bufsize',
+        `${safeVideoKbps}k`,
+        '-c:a',
+        'copy',
+        '-movflags',
+        '+faststart',
+        recodePath,
+      ];
+
+      await new Promise<void>((resolve) => {
+        recodeProcess = spawn('ffmpeg', recodeArgs);
+        recodeProcess.stderr.on('data', (d: Buffer) => {
+          recodeStderr += d.toString();
+        });
+        recodeProcess.on('close', (code: number) => {
+          if (code !== 0) {
+            console.error(
+              `[renderReelService] Failsafe recode warning: ${recodeStderr.slice(-400)}`,
+            );
+            resolve();
+          } else {
+            if (fs.existsSync(recodePath)) {
+              fs.renameSync(recodePath, reelPath);
+            }
+            resolve();
+          }
+        });
+        recodeProcess.on('error', (err: any) => {
+          console.error('[renderReelService] Failsafe recode spawn error:', err?.message || err);
+          resolve();
+        });
+      });
+    }
+
+    // 7. Generate thumbnail at result reveal (result.t + 0.6s)
+    thumbTime = Math.min(tl.end - 0.2, (tl.result?.t || 10) + 0.6);
     thumbArgs = [
       '-y',
       '-ss',

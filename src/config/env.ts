@@ -1,4 +1,5 @@
 import dotenv from 'dotenv';
+import { DEFAULT_MAX_REEL_BYTES } from './defaults';
 dotenv.config();
 
 export interface EnvironmentConfig {
@@ -8,6 +9,7 @@ export interface EnvironmentConfig {
 
   STREAM_CONCURRENCY: number;
   MAX_JOB_LIMIT: number;
+  MAX_REEL_BYTES: number;
   STORAGE_PROVIDER: 'gcp' | 'aws';
   FIRESTORE_JOBS_COLLECTION: string;
   CRON_INTERVAL_MS: number;
@@ -58,6 +60,7 @@ export const env: EnvironmentConfig = {
 
   STREAM_CONCURRENCY: parseInt(process.env.STREAM_CONCURRENCY || '1', 10),
   MAX_JOB_LIMIT: parseInt(process.env.MAX_JOB_LIMIT || '2', 10),
+  MAX_REEL_BYTES: parseInt(process.env.MAX_REEL_BYTES || String(DEFAULT_MAX_REEL_BYTES), 10),
   STORAGE_PROVIDER: (process.env.STORAGE_PROVIDER?.toLowerCase() === 'aws' ? 'aws' : 'gcp') as
     'gcp' | 'aws',
   FIRESTORE_JOBS_COLLECTION: process.env.FIRESTORE_JOBS_COLLECTION || 'auction_reels_jobs',

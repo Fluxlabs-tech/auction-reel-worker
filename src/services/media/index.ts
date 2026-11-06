@@ -8,3 +8,4 @@ export * from './cleanupOrphanScratch.service';
 export * from './extractAudio.service';
 export * from './assertNonEmptyOutput.service';
 export * from './probeDuration.service';
+export * from './calculateBitrateBudget.service';

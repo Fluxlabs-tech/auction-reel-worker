@@ -26,6 +26,13 @@ export const MAX_STEP_ATTEMPTS: Record<string, number> = {
 
 export const MAX_LOT_ATTEMPTS = 3;
 
+// Reel output size budget & rate control (WhatsApp 16MB hard limit)
+export const DEFAULT_MAX_REEL_BYTES = 15 * 1024 * 1024; // 15 MB (1 MB safety margin below 16MB limit)
+export const DEFAULT_AUDIO_BITRATE_KBPS = 128;
+export const DEFAULT_REEL_CRF = 23;
+export const MAX_VIDEO_BITRATE_CEILING_KBPS = 2500;
+export const MIN_VIDEO_BITRATE_FLOOR_KBPS = 500;
+
 export const DEFAULT_REEL_CONFIG: ReelConfig = {
   window: {
     pre_roll_s: 10,

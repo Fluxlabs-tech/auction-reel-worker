@@ -68,8 +68,7 @@ export const processStreamLotsService = async (job: AuctionReelJob): Promise<voi
 
     // 2. Fetch transcript words from storage bucket
     transcriptKey =
-      job.transcript?.storage_uri ||
-      `auction-reels/transcripts/${job.stream_id}/transcript.json`;
+      job.transcript?.storage_uri || `auction-reels/transcripts/${job.stream_id}/transcript.json`;
     try {
       transcriptBuffer = await downloadFromStorageService(transcriptKey);
       allWords = JSON.parse(transcriptBuffer.toString('utf-8'));
