@@ -6,6 +6,8 @@ import { HlsSegment } from './parsePlaylist.service';
 import { LotWindow } from '../../interfaces/lot.interface';
 import { ensureSegmentDownloadedService } from './ensureSegmentDownloaded.service';
 import { assertNonEmptyOutputService } from './assertNonEmptyOutput.service';
+import { calculateBitrateBudgetService, BitrateBudget } from './calculateBitrateBudget.service';
+import { env } from '../../config/env';
 
 export const cutClipService = async (
   segs: HlsSegment[],
@@ -21,6 +23,7 @@ export const cutClipService = async (
   let clipPath: string;
   let ssOffset: number;
   let duration: number;
+  let budget: BitrateBudget;
   let ffmpegArgs: string[];
   let ffmpegProcess: any;
   let stderrData: string = '';
@@ -66,6 +69,9 @@ export const cutClipService = async (
     ssOffset = Math.max(0, m0 - needSegs[0].media_start);
     duration = Math.max(0.5, m1 - m0);
 
+    // Dynamic bitrate budget so raw reel / cut clip also stays within 16MB
+    budget = calculateBitrateBudgetService(duration, env.MAX_REEL_BYTES);
+
     ffmpegArgs = [
       '-y',
       '-f',
@@ -85,11 +91,15 @@ export const cutClipService = async (
       '-preset',
       'veryfast',
       '-crf',
-      '16',
+      String(budget.crf),
+      '-maxrate',
+      `${budget.videoMaxrateKbps}k`,
+      '-bufsize',
+      `${budget.bufsizeKbps}k`,
       '-c:a',
       'aac',
       '-b:a',
-      '160k',
+      `${budget.audioBitrateKbps}k`,
       clipPath,
     ];
 
@@ -114,6 +124,7 @@ export const cutClipService = async (
     });
 
     await assertNonEmptyOutputService(clipPath);
+
     return clipPath;
   } catch (error: any) {
     console.error('[cutClipService] Error cutting clip:', error?.message || error, {
