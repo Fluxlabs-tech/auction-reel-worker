@@ -181,9 +181,9 @@ export const renderSingleLotReelService = async (
 
     // 7. Upload reel, raw reel, and thumbnail to configured bucket (GCP/AWS)
     lotNumberStr = String(lot.lot_number).padStart(2, '0');
-    reelKey = `reels/${job.stream_id}/${lotNumberStr}_${lot.id}/reel.mp4`;
-    rawReelKey = `reels/${job.stream_id}/${lotNumberStr}_${lot.id}/raw_reel.mp4`;
-    thumbKey = `reels/${job.stream_id}/${lotNumberStr}_${lot.id}/thumb.jpg`;
+    reelKey = `auction-reels/reels/${job.stream_id}/${lotNumberStr}_${lot.id}/reel.mp4`;
+    rawReelKey = `auction-reels/reels/${job.stream_id}/${lotNumberStr}_${lot.id}/raw_reel.mp4`;
+    thumbKey = `auction-reels/reels/${job.stream_id}/${lotNumberStr}_${lot.id}/thumb.jpg`;
 
     // Upload raw reel (uncropped/clean cut clip without HUD overlays)
     rawReelUri = await uploadToStorageService(rawReelKey, clipPath, {

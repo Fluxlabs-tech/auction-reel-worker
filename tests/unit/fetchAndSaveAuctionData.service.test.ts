@@ -59,7 +59,7 @@ describe('fetchAndSaveAuctionDataService', () => {
       mockTimeline,
     );
     (storage.uploadToStorageService as jest.Mock).mockResolvedValue(
-      'gs://zoop-auction-reels-prod/auctions/70316/auctions.json',
+      'auction-reels/auctions/70316/auctions.json',
     );
 
     const saveJobSpy = jest
@@ -103,7 +103,7 @@ describe('fetchAndSaveAuctionDataService', () => {
     );
 
     expect(storage.uploadToStorageService).toHaveBeenCalledWith(
-      `auctions/${streamId}/auctions.json`,
+      `auction-reels/auctions/${streamId}/auctions.json`,
       expect.any(String),
       expect.objectContaining({ contentType: 'application/json' }),
     );

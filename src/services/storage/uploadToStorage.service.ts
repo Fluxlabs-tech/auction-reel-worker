@@ -15,6 +15,7 @@ export const uploadToStorageService = async (
   options?: UploadOptions,
 ): Promise<string> => {
   let targetBucket: string;
+  let normalizedKey: string;
   let mimeType: string;
   let fileBuffer: Buffer;
   let gcsClient: any;
@@ -24,6 +25,7 @@ export const uploadToStorageService = async (
   let s3Command: any;
 
   try {
+    normalizedKey = key.replace(/^\/+/, '');
     targetBucket =
       options?.bucket || (env.STORAGE_PROVIDER === 'aws' ? env.S3_BUCKET : env.REELS_BUCKET);
     mimeType = options?.contentType || 'application/octet-stream';
@@ -41,18 +43,18 @@ export const uploadToStorageService = async (
       s3Client = getS3Client();
       s3Command = new PutObjectCommand({
         Bucket: targetBucket,
-        Key: key,
+        Key: normalizedKey,
         Body: fileBuffer,
         ContentType: mimeType,
       });
       await s3Client.send(s3Command);
-      return `s3://${targetBucket}/${key}`;
+      return normalizedKey;
     }
 
     // Default: GCP Cloud Storage
     gcsClient = getGcsClient();
     bucketRef = gcsClient.bucket(targetBucket);
-    fileRef = bucketRef.file(key);
+    fileRef = bucketRef.file(normalizedKey);
 
     await fileRef.save(fileBuffer, {
       resumable: false,
@@ -62,7 +64,7 @@ export const uploadToStorageService = async (
       },
     });
 
-    return `gs://${targetBucket}/${key}`;
+    return normalizedKey;
   } catch (error: any) {
     console.error('[uploadToStorageService] Error uploading file to storage:', {
       error: error?.message || error,

@@ -8,7 +8,7 @@ export const getStreamDateFolder = (dateIso?: string): string => {
 
 export const getStreamGcsPrefix = (streamId: number, dateIso?: string): string => {
   const dateFolder = getStreamDateFolder(dateIso);
-  return `auction_reels/${dateFolder}/${streamId}/`;
+  return `auction-reels/${dateFolder}/${streamId}/`;
 };
 
 export const getLotGcsPrefix = (

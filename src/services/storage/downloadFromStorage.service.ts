@@ -13,6 +13,8 @@ export const downloadFromStorageService = async (
   options?: DownloadOptions,
 ): Promise<Buffer> => {
   let targetBucket: string;
+  let cleanKey: string;
+  let detectedBucket: string | undefined;
   let gcsClient: any;
   let bucketRef: any;
   let fileRef: any;
@@ -24,14 +26,27 @@ export const downloadFromStorageService = async (
   let chunks: Buffer[] = [];
 
   try {
+    cleanKey = key.replace(/^\/+/, '');
+    detectedBucket = options?.bucket;
+
+    if (cleanKey.startsWith('gs://')) {
+      const parts = cleanKey.replace('gs://', '').split('/');
+      detectedBucket = detectedBucket || parts[0];
+      cleanKey = parts.slice(1).join('/');
+    } else if (cleanKey.startsWith('s3://')) {
+      const parts = cleanKey.replace('s3://', '').split('/');
+      detectedBucket = detectedBucket || parts[0];
+      cleanKey = parts.slice(1).join('/');
+    }
+
     targetBucket =
-      options?.bucket || (env.STORAGE_PROVIDER === 'aws' ? env.S3_BUCKET : env.REELS_BUCKET);
+      detectedBucket || (env.STORAGE_PROVIDER === 'aws' ? env.S3_BUCKET : env.REELS_BUCKET);
 
     if (env.STORAGE_PROVIDER === 'aws') {
       s3Client = getS3Client();
       s3Command = new GetObjectCommand({
         Bucket: targetBucket,
-        Key: key,
+        Key: cleanKey,
       });
       s3Response = await s3Client.send(s3Command);
       stream = s3Response.Body as Readable;
@@ -46,7 +61,7 @@ export const downloadFromStorageService = async (
     // Default: GCP Cloud Storage
     gcsClient = getGcsClient();
     bucketRef = gcsClient.bucket(targetBucket);
-    fileRef = bucketRef.file(key);
+    fileRef = bucketRef.file(cleanKey);
     downloaded = await fileRef.download();
 
     return downloaded[0];

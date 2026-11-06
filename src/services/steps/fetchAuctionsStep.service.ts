@@ -75,7 +75,7 @@ export const fetchAuctionsStepService = async (
         close_reason: a.close_reason,
       },
       artifacts: {
-        auction_json: `gs://${streamPrefix}${String(idx + 1).padStart(2, '0')}_${a.auction_id}/auction.json`,
+        auction_json: `${streamPrefix}${String(idx + 1).padStart(2, '0')}_${a.auction_id}/auction.json`,
       },
     }));
 
